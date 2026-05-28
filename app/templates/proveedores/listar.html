@@ -1,0 +1,46 @@
+<h2>Proveedores</h2>
+
+<a href="/dashboard">Volver</a>
+
+<a href="/proveedores/crear">
+    Nuevo proveedor
+</a>
+
+<br><br>
+
+<table border="1">
+
+<tr>
+    <th>ID</th>
+    <th>Nombre</th>
+    <th>Teléfono</th>
+    <th>Acciones</th>
+</tr>
+
+{% for p in proveedores %}
+
+<tr>
+
+    <td>{{ p.id_proveedor }}</td>
+    <td>{{ p.nombre }}</td>
+    <td>{{ p.telefono }}</td>
+
+    <td>
+
+        <a href="/proveedores/editar/{{ p.id_proveedor }}">
+            Editar
+        </a>
+
+        |
+
+        <a href="/proveedores/eliminar/{{ p.id_proveedor }}">
+            Eliminar
+        </a>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>

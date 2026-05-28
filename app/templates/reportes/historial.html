@@ -1,0 +1,27 @@
+<h2>Historial Reportes</h2>
+
+<a href="/reportes">Volver</a>
+
+<table border="1">
+
+<tr>
+    <th>ID</th>
+    <th>Tipo</th>
+    <th>Fecha</th>
+    <th>Descripción</th>
+</tr>
+
+{% for r in reportes %}
+
+<tr>
+
+    <td>{{ r.id_reporte }}</td>
+    <td>{{ r.tipo }}</td>
+    <td>{{ r.fecha_generacion }}</td>
+    <td>{{ r.descripcion }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>

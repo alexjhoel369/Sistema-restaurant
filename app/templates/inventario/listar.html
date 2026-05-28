@@ -1,0 +1,32 @@
+<h2>Inventario</h2>
+
+<a href="/dashboard">Volver</a>
+<a href="/inventario/entrada">Registrar Entrada</a>
+<a href="/inventario/movimientos">Movimientos</a>
+
+<table border="1">
+
+<tr>
+    <th>Producto</th>
+    <th>Stock</th>
+    <th>Mínimo</th>
+    <th>Acciones</th>
+</tr>
+
+{% for i in inventarios %}
+
+<tr>
+    <td>{{ i.producto.nombre }}</td>
+    <td>{{ i.stock_actual }}</td>
+    <td>{{ i.stock_minimo }}</td>
+
+    <td>
+        <a href="/inventario/editar/{{ i.id_inventario }}">
+            Editar
+        </a>
+    </td>
+</tr>
+
+{% endfor %}
+
+</table>

@@ -1,0 +1,53 @@
+<h2>Editar Mesa</h2>
+
+<form method="POST">
+
+    Número:
+
+    <input
+        type="number"
+        name="numero"
+        value="{{ mesa.numero }}"
+    >
+
+    <br><br>
+
+    Capacidad:
+
+    <input
+        type="number"
+        name="capacidad"
+        value="{{ mesa.capacidad }}"
+    >
+
+    <br><br>
+
+    Estado:
+
+    <select name="estado">
+
+        <option value="disponible"
+        {% if mesa.estado == 'disponible' %}
+        selected
+        {% endif %}
+        >
+            disponible
+        </option>
+
+        <option value="ocupada"
+        {% if mesa.estado == 'ocupada' %}
+        selected
+        {% endif %}
+        >
+            ocupada
+        </option>
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Actualizar
+    </button>
+
+</form>

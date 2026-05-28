@@ -1,0 +1,50 @@
+<h2>Editar Usuario</h2>
+
+<form method="POST">
+
+    Nombre:
+
+    <input
+        type="text"
+        name="nombre"
+        value="{{ usuario.nombre }}"
+    >
+
+    <br><br>
+
+    Email:
+
+    <input
+        type="email"
+        name="email"
+        value="{{ usuario.email }}"
+    >
+
+    <br><br>
+
+    Rol:
+
+    <select name="id_rol">
+
+        {% for r in roles %}
+
+        <option
+            value="{{ r.id_rol }}"
+            {% if usuario.id_rol == r.id_rol %}
+            selected
+            {% endif %}
+        >
+            {{ r.nombre }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Actualizar
+    </button>
+
+</form>

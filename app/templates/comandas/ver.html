@@ -1,0 +1,49 @@
+<h2>Comanda Mesa {{ comanda.mesa.numero }}</h2>
+
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<a href="/mesas">Volver</a>
+
+<h3>Total: {{ comanda.total }}</h3>
+
+<h3>Agregar Producto</h3>
+
+<form method="POST" action="/comandas/{{ comanda.id_comanda }}/agregar">
+    <select name="id_producto">
+        {% for p in productos %}
+        <option value="{{ p.id_producto }}">{{ p.nombre }} - {{ p.precio }}</option>
+        {% endfor %}
+    </select>
+
+    Cantidad:
+    <input type="number" name="cantidad">
+
+    <button type="submit">Agregar</button>
+</form>
+
+<h3>Detalle</h3>
+
+<table border="1">
+    <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Subtotal</th>
+    </tr>
+
+    {% for d in detalles %}
+    <tr>
+        <td>{{ d.producto.nombre }}</td>
+        <td>{{ d.cantidad }}</td>
+        <td>{{ d.precio_unitario }}</td>
+        <td>{{ d.cantidad * d.precio_unitario }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br><br>
+<a href="/cerrar_comanda/{{ comanda.id_comanda }}">
+    <button>Cerrar y Facturar</button>
+</a>

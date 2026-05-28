@@ -1,0 +1,29 @@
+<h2>Editar Proveedor</h2>
+
+<form method="POST">
+
+    Nombre:
+
+    <input
+        type="text"
+        name="nombre"
+        value="{{ proveedor.nombre }}"
+    >
+
+    <br><br>
+
+    Teléfono:
+
+    <input
+        type="text"
+        name="telefono"
+        value="{{ proveedor.telefono }}"
+    >
+
+    <br><br>
+
+    <button type="submit">
+        Actualizar
+    </button>
+
+</form>

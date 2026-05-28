@@ -1,0 +1,49 @@
+<h2>Roles</h2>
+
+<a href="/dashboard">
+    Volver
+</a>
+
+<br><br>
+
+<a href="/roles/crear">
+    Nuevo Rol
+</a>
+
+<br><br>
+
+<table border="1">
+
+<tr>
+    <th>ID</th>
+    <th>Nombre</th>
+    <th>Acciones</th>
+</tr>
+
+{% for r in roles %}
+
+<tr>
+
+    <td>{{ r.id_rol }}</td>
+
+    <td>{{ r.nombre }}</td>
+
+    <td>
+
+        <a href="/roles/editar/{{ r.id_rol }}">
+            Editar
+        </a>
+
+        |
+
+        <a href="/roles/eliminar/{{ r.id_rol }}">
+            Eliminar
+        </a>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>

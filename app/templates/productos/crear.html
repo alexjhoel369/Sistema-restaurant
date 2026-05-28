@@ -1,0 +1,17 @@
+<h2>Crear Producto</h2>
+
+<form method="POST">
+    Nombre: <input type="text" name="nombre"><br>
+    Precio: <input type="number" step="0.01" name="precio"><br>
+
+    Categoría:
+    <select name="id_categoria">
+        {% for c in categorias %}
+        <option value="{{ c.id_categoria }}">{{ c.nombre }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Guardar</button>
+</form>
+
+<a href="/productos">Volver</a>

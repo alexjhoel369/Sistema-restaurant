@@ -1,0 +1,47 @@
+<h2>Registrar Entrada</h2>
+
+<form method="POST">
+
+    Producto:
+
+    <select name="id_producto">
+
+        {% for p in productos %}
+
+        <option value="{{ p.id_producto }}">
+            {{ p.nombre }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    Cantidad:
+
+    <input type="number" name="cantidad">
+
+    <br><br>
+
+    Proveedor:
+
+    <select name="id_proveedor">
+
+        {% for p in proveedores %}
+
+        <option value="{{ p.id_proveedor }}">
+            {{ p.nombre }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <br><br>
+
+    <button type="submit">
+        Registrar
+    </button>
+
+</form>

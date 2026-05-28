@@ -1,0 +1,55 @@
+<h2>Usuarios</h2>
+
+<a href="/dashboard">
+    Volver
+</a>
+
+<br><br>
+
+<a href="/usuarios/crear">
+    Nuevo Usuario
+</a>
+
+<br><br>
+
+<table border="1">
+
+<tr>
+    <th>Nombre</th>
+    <th>Email</th>
+    <th>Rol</th>
+    <th>Activo</th>
+    <th>Acciones</th>
+</tr>
+
+{% for u in usuarios %}
+
+<tr>
+
+    <td>{{ u.nombre }}</td>
+
+    <td>{{ u.email }}</td>
+
+    <td>{{ u.rol.nombre }}</td>
+
+    <td>{{ u.activo }}</td>
+
+    <td>
+
+        <a href="/usuarios/editar/{{ u.id_usuario }}">
+            Editar
+        </a>
+
+        |
+
+        <a href="/usuarios/eliminar/{{ u.id_usuario }}">
+            Eliminar
+        </a>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>

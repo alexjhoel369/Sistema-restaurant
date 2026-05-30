@@ -1,4 +1,27 @@
-# Sistema-restaurant
+# Sistema Web de Gestión Integral para Restaurantes - version
+
+## Descripción
+Plataforma web para gestión de comandas, inventario, facturación y reportes en restaurantes.
+
+## Tecnologías
+- Backend: Python 3.11 + Flask 2.3.2
+- Frontend: HTML5 + CSS3 + Bootstrap 5 + JavaScript
+- Base de Datos: PostgreSQL 15.x
+- ORM: SQLAlchemy 2.0.19
+- Autenticación: JWT + bcrypt
+
+## Requisitos Previos
+- Python 3.11+
+- PostgreSQL 15+
+- pip (gestor de paquetes Python)
+
+## Instalación Rápida
+1. Clonar repositorio: `git clone https://github.com/alexjhoel369/Sistema-restaurant.git`
+2. Instalar dependencias: `pip install -r requirements.txt`
+3. Iniciar servidor: `python run.py`
+
+## Estructura del Proyecto
+
 Sistema Web de Gestión Integral para Restaurantes 
 
 # Para iniciar 

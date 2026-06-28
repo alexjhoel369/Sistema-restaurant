@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Facturar Comanda #{{ comanda.id_comanda }}{% endblock %}
+{% block page_title %}Facturar Comanda #{{ comanda.id_comanda }}{% endblock %}
+{% block page_subtitle %}Mesa {{ comanda.mesa.numero }} | Total: Bs. {{ "%.2f"|format(comanda.total) }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-receipt"></i> Datos de Facturación
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="nit_ci" class="form-label">NIT/CI del Cliente</label>
+                        <input type="text" class="form-control" id="nit_ci" name="nit_ci" value="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="razon_social" class="form-label">Razón Social</label>
+                        <input type="text" class="form-control" id="razon_social" name="razon_social" 
+                               value="SIN NOMBRE" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_metodo_pago" class="form-label">Método de Pago</label>
+                        <select class="form-select" id="id_metodo_pago" name="id_metodo_pago" required>
+                            <option value="">Seleccionar...</option>
+                            {% for metodo in metodos_pago %}
+                            <option value="{{ metodo.id_metodo }}">{{ metodo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="monto_pago" class="form-label">Monto (Bs.)</label>
+                        <input type="number" class="form-control" id="monto_pago" name="monto_pago" 
+                               value="{{ comanda.total }}" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="referencia" class="form-label">Referencia (opcional)</label>
+                        <input type="text" class="form-control" id="referencia" name="referencia" 
+                               placeholder="N° tarjeta, transacción, etc.">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Emitir Factura
+                        </button>
+                        <a href="{{ url_for('cajero.dashboard') }}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Productos de la comanda -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Productos
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>Precio</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for det in comanda.detalles %}
+                        <tr>
+                            <td>{{ det.producto.nombre }}</td>
+                            <td>x{{ det.cantidad }}</td>
+                            <td>Bs. {{ "%.2f"|format(det.precio_unitario) }}</td>
+                            <td><strong>Bs. {{ "%.2f"|format(det.subtotal) }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-primary">
+                            <td colspan="3"><strong>TOTAL</strong></td>
+                            <td><strong>Bs. {{ "%.2f"|format(comanda.total) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

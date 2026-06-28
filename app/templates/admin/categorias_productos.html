@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Categorías de Productos - Admin{% endblock %}
+{% block page_title %}Categorías de Productos{% endblock %}
+{% block page_subtitle %}Administrar categorías del menú{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'plus-circle' }}"></i>
+                {{ 'Editar Categoría' if editar else 'Nueva Categoría' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('categoria_producto.actualizar', id_categoria=editar.id_categoria) if editar else url_for('categoria_producto.guardar') }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ editar.descripcion if editar else '' }}</textarea>
+                    </div>
+                    {% if editar %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" 
+                               {{ 'checked' if editar.activo else '' }}>
+                        <label class="form-check-label" for="activo">Categoría Activa</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'plus-circle' }}"></i>
+                        {{ 'Actualizar' if editar else 'Guardar' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('categoria_producto.categorias') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-tags"></i> Lista de Categorías
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in categorias %}
+                            <tr>
+                                <td>{{ cat.id_categoria }}</td>
+                                <td><strong>{{ cat.nombre }}</strong></td>
+                                <td>{{ cat.descripcion or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if cat.activo else 'secondary' }}">
+                                        {{ 'Activo' if cat.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('categoria_producto.editar', id_categoria=cat.id_categoria) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ cat.id_categoria }}, '{{ cat.nombre }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No hay categorías registradas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar la categoría "${nombre}"?`)) {
+        window.location.href = `/categorias-productos/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

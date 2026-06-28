@@ -1,0 +1,101 @@
+{% extends 'layout.html' %}
+{% block title %}Gestión de Categorías{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-tags text-primary"></i> Categorías de Productos</h1>
+    
+    {% if not editar %}
+    <button class="btn btn-primary shadow-sm" data-bs-toggle="collapse" data-bs-target="#formCategoriaCollapse">
+        <i class="bi bi-plus-circle me-2"></i> Nueva Categoría
+    </button>
+    {% endif %}
+</div>
+
+<!-- Formulario Colapsable -->
+<div class="collapse {% if not editar %}show{% endif %} mb-4" id="formCategoriaCollapse">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-dark text-white fw-bold py-3">
+            <i class="bi {% if editar %}bi-pencil-square{% else %}bi-plus-circle{% endif %} me-2"></i>
+            {% if editar %}Editar Categoría #{{ editar.id_categoria }}{% else %}Registrar Nueva Clasificación{% endif %}
+        </div>
+        <div class="card-body p-4">
+            <form action="{% if editar %}{{ url_for('categoria.actualizar', id_categoria=editar.id_categoria) }}{% else %}{{ url_for('categoria.guardar') }}{% endif %}" method="POST">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="nombre" class="form-label fw-bold">Nombre de la Categoría</label>
+                        <input type="text" class="form-control form-control-lg" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" 
+                               placeholder="Ej: Bebidas, Platos Fuertes, Postres..." required autocomplete="off">
+                        <div class="form-text mt-1">Usada para agrupar productos en el menú y facilitar la búsqueda.</div>
+                    </div>
+                    
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="d-grid w-100">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {% if editar %}Guardar Cambios{% else %}Crear Categoría{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if editar %}
+                    <div class="col-12">
+                        <a href="{{ url_for('categoria.categorias') }}" class="btn btn-outline-secondary btn-lg px-4">Cancelar Edición</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla Estandarizada -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2"></i>Catálogo de Clasificaciones</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 admin-table">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Nombre de la Categoría</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in categorias %}
+                <tr>
+                    <td class="ps-4 text-muted small">#{{ c.id_categoria }}</td>
+                    <td><span class="badge bg-info-subtle text-dark border border-info rounded-pill px-3 py-2 fs-6">{{ c.nombre }}</span></td>
+                    <td class="text-end pe-4">
+                        <a href="{{ url_for('categoria.editar', id_categoria=c.id_categoria) }}" 
+                           class="btn btn-sm btn-outline-primary rounded-circle me-1" title="Editar" 
+                           style="width: 38px; height: 38px;">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('categoria.eliminar', id_categoria=c.id_categoria) }}" 
+                           class="btn btn-sm btn-outline-danger rounded-circle" title="Eliminar" 
+                           onclick="return confirm('¿Eliminar esta categoría? Los productos asociados quedarán sin categoría.')"
+                           style="width: 38px; height: 38px;">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center py-5 text-muted">
+                        <i class="bi bi-tags fs-1 d-block mb-2 opacity-50"></i>
+                        No hay categorías registradas.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

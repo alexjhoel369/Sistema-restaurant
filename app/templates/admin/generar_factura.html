@@ -1,0 +1,110 @@
+{% extends 'layout.html' %}
+{% block title %}Generar Factura{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cajero.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-file-earmark-text text-primary"></i> Generar Factura</h1>
+    <a href="{{ url_for('comanda.comandas') }}" class="btn btn-outline-secondary shadow-sm">
+        <i class="bi bi-arrow-left me-2"></i> Volver a Comandas
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Resumen de la Comanda (Izquierda) -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <span class="fw-bold"><i class="bi bi-receipt me-2"></i>Detalle de Comanda #{{ comanda.id_comanda }}</span>
+                <span class="badge bg-light text-dark">Mesa {{ comanda.mesa.numero }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0 admin-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Producto</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-end">P. Unitario</th>
+                                <th class="text-end pe-4">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in comanda.detalles %}
+                            <tr>
+                                <td class="ps-4 fw-medium">{{ detalle.producto.nombre }}</td>
+                                <td class="text-center">{{ detalle.cantidad }}</td>
+                                <td class="text-end">Bs. {{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                <td class="text-end pe-4 fw-bold">Bs. {{ "%.2f"|format(detalle.cantidad * detalle.precio_unitario) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-group-divider bg-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold fs-5 ps-4">TOTAL A PAGAR:</td>
+                                <td class="text-end pe-4 fw-bold fs-4 text-success">Bs. {{ "%.2f"|format(comanda.total) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Facturación (Derecha) -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm border-top border-4 border-primary">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-cash-stack me-2"></i>Datos de Facturación</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('factura.guardar') }}" method="POST">
+                    <input type="hidden" name="id_comanda" value="{{ comanda.id_comanda }}">
+                    <input type="hidden" name="id_sesion" value="{{ sesion.id_sesion }}">
+                    <input type="hidden" name="total" value="{{ comanda.total }}">
+
+                    <h6 class="mb-3 text-uppercase small fw-bold text-muted">Datos del Cliente</h6>
+                    <div class="mb-3">
+                        <label for="nit_ci" class="form-label fw-bold">NIT / C.I.</label>
+                        <input type="text" class="form-control form-control-lg" id="nit_ci" name="nit_ci" required placeholder="Ej: 1234567890 o 0 para consumidor final">
+                    </div>
+                    <div class="mb-4">
+                        <label for="razon_social" class="form-label fw-bold">Razón Social / Nombre</label>
+                        <input type="text" class="form-control form-control-lg" id="razon_social" name="razon_social" required placeholder="Nombre completo o empresa">
+                    </div>
+
+                    <hr class="my-4">
+                    
+                    <h6 class="mb-3 text-uppercase small fw-bold text-muted">Forma de Pago</h6>
+                    <div class="mb-4">
+                        <label for="metodo_pago" class="form-label fw-bold">Método Principal</label>
+                        <select class="form-select form-select-lg" id="metodo_pago" name="metodo_pago" required>
+                            <option value="efectivo">💵 Efectivo</option>
+                            <option value="tarjeta">💳 Tarjeta de Crédito/Débito</option>
+                            <option value="qr">📱 Código QR</option>
+                            <option value="transferencia">🏦 Transferencia Bancaria</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info py-3 rounded-3 border-0 bg-info-subtle text-dark">
+                        <small class="d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill me-2 fs-5"></i> 
+                            La factura se generará vinculada a la sesión de caja actual (#{{ sesion.id_sesion }}).
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg py-3 fw-bold shadow-sm">
+                            <i class="bi bi-printer-fill me-2"></i> Generar e Imprimir Factura
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+{% block title %}Kardex de Movimientos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-arrow-left-right text-primary"></i> Kardex de Inventario</h1>
+    <button class="btn btn-outline-secondary shadow-sm" onclick="window.print()">
+        <i class="bi bi-printer me-2"></i> Imprimir Reporte
+    </button>
+</div>
+
+<!-- Tabla de Movimientos Históricos -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Historial de Transacciones</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 admin-table">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Fecha/Hora</th>
+                    <th>Insumo</th>
+                    <th>Tipo Movimiento</th>
+                    <th class="text-end">Cantidad</th>
+                    <th>Usuario Responsable</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movimientos %}
+                <tr>
+                    <td class="ps-4 text-muted small">{{ m.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="fw-bold">{{ m.insumo.nombre }}</td>
+                    <td>
+                        {% if m.tipo == 'entrada_compra' %}
+                            <span class="badge bg-success-subtle text-success border border-success rounded-pill">Entrada Compra</span>
+                        {% elif m.tipo == 'salida_comanda' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning rounded-pill">Salida Comanda</span>
+                        {% elif m.tipo == 'salida_merma' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger rounded-pill">Merma/Pérdida</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-dark border border-secondary rounded-pill">Ajuste Manual</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end fw-bold 
+                        {% if 'entrada' in m.tipo %}text-success{% else %}text-danger{% endif %}">
+                        {% if 'entrada' in m.tipo %}+{% else %}-{% endif %}{{ "%.3f"|format(m.cantidad) }} {{ m.insumo.unidad_medida }}
+                    </td>
+                    <td>{{ m.usuario.nombre if m.usuario else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                        No se encontraron movimientos.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

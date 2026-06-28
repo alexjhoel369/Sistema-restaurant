@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Facturas Emitidas{% endblock %}
+{% block page_title %}Facturas Emitidas{% endblock %}
+{% block page_subtitle %}Historial de facturación{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-receipt"></i> Últimas Facturas
+    </div>
+    <div class="card-body">
+        {% if facturas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>NIT/CI</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in facturas %}
+                    <tr>
+                        <td><strong>#{{ factura.nro_factura }}</strong></td>
+                        <td>{{ factura.fecha_emision.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ factura.razon_social_cliente }}</td>
+                        <td>{{ factura.nit_ci_cliente }}</td>
+                        <td><strong>Bs. {{ "%.2f"|format(factura.total) }}</strong></td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if factura.estado == 'emitida' else 'danger' }}">
+                                {{ factura.estado | capitalize }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">No hay facturas emitidas</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Comandas{% endblock %}
+{% block page_title %}Mis Comandas{% endblock %}
+{% block page_subtitle %}Historial de comandas atendidas{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{{ url_for('mesero.nueva_comanda') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nueva Comanda
+        </a>
+        <a href="{{ url_for('mesero.dashboard') }}" class="btn btn-outline-primary">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-clipboard-check"></i> Lista de Comandas
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th># Comanda</th>
+                        <th>Mesa</th>
+                        <th>Fecha</th>
+                        <th>Productos</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comanda in comandas %}
+                    <tr>
+                        <td><strong>#{{ comanda.id_comanda }}</strong></td>
+                        <td>Mesa {{ comanda.mesa.numero }}</td>
+                        <td>{{ comanda.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ comanda.detalles|length }} productos</td>
+                        <td><strong>Bs. {{ "%.2f"|format(comanda.total) }}</strong></td>
+                        <td>
+                            <span class="badge bg-{{ 
+                                'warning' if comanda.estado == 'abierta' 
+                                else 'success' if comanda.estado == 'cerrada'
+                                else 'danger' 
+                            }}">
+                                {{ comanda.estado | capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('mesero.ver_comanda', id_comanda=comanda.id_comanda) }}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <i class="bi bi-inbox"></i> No tienes comandas registradas
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

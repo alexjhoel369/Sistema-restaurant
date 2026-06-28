@@ -1,0 +1,173 @@
+{% extends 'layout.html' %}
+{% block title %}Gestión de Comandas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-receipt text-primary"></i> Gestión de Comandas</h1>
+    <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#nuevaComandaModal">
+        <i class="bi bi-plus-lg me-2"></i> Nueva Comanda
+    </button>
+</div>
+
+<!-- Tabla de Comandas Activas -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2"></i>Listado de Pedidos en Curso</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 admin-table">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Mesa</th>
+                    <th>Mesero</th>
+                    <th>Fecha</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in comandas %}
+                <tr>
+                    <td class="ps-4 fw-bold">#{{ c.id_comanda }}</td>
+                    <td><span class="badge bg-dark rounded-pill px-3 py-2">Mesa {{ c.mesa.numero }}</span></td>
+                    <td>{{ c.mesero.nombre }}</td>
+                    <td class="text-muted small">{{ c.fecha_creacion.strftime('%d/%m %H:%M') }}</td>
+                    <td class="text-end fw-bold fs-6 text-success">Bs. {{ "%.2f"|format(c.total) }}</td>
+                    <td class="text-center">
+                        {% if c.estado == 'pendiente' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning rounded-pill px-3">Pendiente</span>
+                        {% elif c.estado == 'en_cocina' %}
+                            <span class="badge bg-info-subtle text-info border border-info rounded-pill px-3">En Cocina</span>
+                        {% elif c.estado == 'listo' %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-3">Listo</span>
+                        {% elif c.estado == 'entregado' %}
+                            <span class="badge bg-secondary-subtle text-dark border border-secondary rounded-pill px-3">Entregado</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-3">Cancelado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <!-- Botón para cambiar estado -->
+                        <a href="{{ url_for('comanda.actualizar_estado', id_comanda=c.id_comanda, estado='en_cocina') }}" 
+                           class="btn btn-sm btn-outline-info rounded-circle me-1" title="Enviar a Cocina"
+                           style="width: 38px; height: 38px;">
+                            <i class="bi bi-fire"></i>
+                        </a>
+                        <a href="{{ url_for('factura.generar_form', id_comanda=c.id_comanda) }}" 
+                           class="btn btn-sm btn-success rounded-circle" title="Facturar"
+                           style="width: 38px; height: 38px;">
+                            <i class="bi bi-cash-coin"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-receipt fs-1 d-block mb-2 opacity-50"></i>
+                        No hay comandas registradas hoy.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Nueva Comanda -->
+<!-- REEMPLAZAR SOLO EL CONTENIDO DEL MODAL EN comandas.html -->
+<div class="modal fade" id="nuevaComandaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ url_for('comanda.guardar') }}" method="POST">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i> Crear Nueva Comanda</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- CORRECCIÓN: Eliminado select de mesero. Se usa current_user en backend -->
+                    <div class="alert alert-info py-2 small mb-3">
+                        <i class="bi bi-person-check me-1"></i> 
+                        Mesero asignado automáticamente: <strong>{{ current_user.nombre }}</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mesa Disponible</label>
+                        <select name="id_mesa" class="form-select form-select-lg" required>
+                            {% for m in mesas %}
+                                <!-- Solo mostrar mesas disponibles -->
+                                {% if m.estado == 'disponible' %}
+                                    <option value="{{ m.id_mesa }}">Mesa {{ m.numero }} ({{ m.capacidad }} pax)</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if not mesas or mesas|selectattr("estado", "equalto", "disponible")|list|length == 0 %}
+                            <small class="text-danger">No hay mesas disponibles actualmente.</small>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="mb-3 text-uppercase small fw-bold text-muted">Productos del Pedido</h6>
+                    
+                    <div id="productos-container">
+                        <div class="row g-2 mb-2 align-items-center producto-row p-2 border rounded bg-light">
+                            <div class="col-md-7">
+                                <select name="id_producto[]" class="form-select" required>
+                                    <option value="" disabled selected>Seleccionar producto...</option>
+                                    {% for p in productos %}
+                                        {% if p.activo %}
+                                            <option value="{{ p.id_producto }}">{{ p.nombre }} - Bs. {{ "%.2f"|format(p.precio) }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="cantidad[]" class="form-control" placeholder="Cant." min="1" value="1" required>
+                            </div>
+                            <div class="col-md-1 text-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle" onclick="eliminarFila(this)" style="width: 38px; height: 38px;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-3" onclick="agregarFila()">
+                        <i class="bi bi-plus-lg me-1"></i> Agregar otro producto
+                    </button>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4">Crear Comanda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Lógica funcional original intacta
+    function agregarFila() {
+        const container = document.getElementById('productos-container');
+        const row = document.querySelector('.producto-row').cloneNode(true);
+        // Limpiar valores de la nueva fila
+        row.querySelector('select').value = "";
+        row.querySelector('input').value = "1";
+        container.appendChild(row);
+    }
+
+    function eliminarFila(btn) {
+        const row = btn.closest('.producto-row');
+        if (document.querySelectorAll('.producto-row').length > 1) {
+            row.remove();
+        } else {
+            alert("Debe haber al menos un producto.");
+        }
+    }
+</script>
+{% endblock %}

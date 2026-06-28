@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración - Admin{% endblock %}
+{% block page_title %}Configuración del Sistema{% endblock %}
+{% block page_subtitle %}Administrar parámetros del sistema{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'plus-circle' }}"></i>
+                {{ 'Editar Configuración' if editar else 'Nueva Configuración' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('configuracion.actualizar', id_config=editar.id_config) if editar else url_for('configuracion.guardar') }}">
+                    <div class="mb-3">
+                        <label for="clave" class="form-label">Clave *</label>
+                        <input type="text" class="form-control" id="clave" name="clave" 
+                               value="{{ editar.clave if editar else '' }}" 
+                               {{ 'readonly' if editar else '' }} required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">Valor *</label>
+                        <input type="text" class="form-control" id="valor" name="valor" 
+                               value="{{ editar.valor if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <input type="text" class="form-control" id="descripcion" name="descripcion" 
+                               value="{{ editar.descripcion if editar else '' }}">
+                    </div>
+                    {% if not editar %}
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo</label>
+                        <select class="form-select" id="tipo" name="tipo">
+                            <option value="texto">Texto</option>
+                            <option value="decimal">Decimal</option>
+                            <option value="entero">Entero</option>
+                            <option value="booleano">Booleano</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="editable" name="editable" checked>
+                        <label class="form-check-label" for="editable">Editable</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'plus-circle' }}"></i>
+                        {{ 'Actualizar' if editar else 'Guardar' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('configuracion.configuracion') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-gear"></i> Configuraciones Actuales
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Clave</th>
+                                <th>Valor</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for config in configuraciones %}
+                            <tr>
+                                <td>{{ config.id_config }}</td>
+                                <td><code>{{ config.clave }}</code></td>
+                                <td><strong>{{ config.valor }}</strong></td>
+                                <td>{{ config.descripcion or '-' }}</td>
+                                <td>
+                                    {% if config.editable %}
+                                    <a href="{{ url_for('configuracion.editar', id_config=config.id_config) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ config.id_config }}, '{{ config.clave }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Solo lectura</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No hay configuraciones registradas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar la configuración "${nombre}"?`)) {
+        window.location.href = `/configuracion/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

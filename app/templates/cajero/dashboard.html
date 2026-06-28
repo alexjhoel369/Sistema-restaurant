@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Caja - Panel{% endblock %}
+{% block page_title %}Panel de Cajero{% endblock %}
+{% block page_subtitle %}Gestión de caja y facturación{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Estado de Caja -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header {{ 'bg-success' if sesion_activa else 'bg-danger' }} text-white">
+                <i class="bi bi-cash-stack"></i> Estado de Caja
+            </div>
+            <div class="card-body">
+                {% if sesion_activa %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> <strong>Caja Abierta</strong>
+                    <hr>
+                    <p><strong>Apertura:</strong> Bs. {{ "%.2f"|format(sesion_activa.monto_apertura) }}</p>
+                    <p><strong>Acumulado:</strong> Bs. {{ "%.2f"|format(sesion_activa.monto_acumulado or 0) }}</p>
+                    <p><strong>Fecha:</strong> {{ sesion_activa.fecha_apertura.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+                
+                <!-- Cerrar Caja -->
+                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+                    <i class="bi bi-lock"></i> Cerrar Caja
+                </button>
+                {% else %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>Caja Cerrada</strong>
+                    <p class="mb-0">Debe abrir caja para facturar</p>
+                </div>
+                
+                <!-- Abrir Caja -->
+                <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+                    <i class="bi bi-unlock"></i> Abrir Caja
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comandas Pendientes de Facturar -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-receipt"></i> Comandas para Facturar ({{ comandas_cerradas|length }})
+            </div>
+            <div class="card-body">
+                {% if comandas_cerradas %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th># Comanda</th>
+                                <th>Mesa</th>
+                                <th>Mesero</th>
+                                <th>Total</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comanda in comandas_cerradas %}
+                            <tr>
+                                <td><strong>#{{ comanda.id_comanda }}</strong></td>
+                                <td>Mesa {{ comanda.mesa.numero }}</td>
+                                <td>{{ comanda.mesero.nombre }}</td>
+                                <td><strong>Bs. {{ "%.2f"|format(comanda.total) }}</strong></td>
+                                <td>
+                                    <a href="{{ url_for('cajero.facturar', id_comanda=comanda.id_comanda) }}" 
+                                       class="btn btn-sm btn-primary {{ 'disabled' if not sesion_activa else '' }}">
+                                        <i class="bi bi-receipt"></i> Facturar
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No hay comandas pendientes de facturar</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Abrir Caja -->
+<div class="modal fade" id="abrirCajaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-unlock"></i> Abrir Caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('cajero.abrir_caja') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="monto_apertura" class="form-label">Monto de Apertura (Bs.)</label>
+                        <input type="number" class="form-control" id="monto_apertura" name="monto_apertura" 
+                               step="0.01" min="0" value="0" required>
+                        <small class="text-muted">Dinero inicial en caja</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Abrir Caja</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cerrar Caja -->
+<div class="modal fade" id="cerrarCajaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-lock"></i> Cerrar Caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('cajero.cerrar_caja') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="monto_cierre" class="form-label">Monto de Cierre (Bs.)</label>
+                        <input type="number" class="form-control" id="monto_cierre" name="monto_cierre" 
+                               step="0.01" min="0" required>
+                        <small class="text-muted">Dinero contado al cerrar caja</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label">Observaciones</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Cerrar Caja</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

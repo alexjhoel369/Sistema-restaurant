@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Comanda{% endblock %}
+{% block page_title %}Crear Nueva Comanda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-plus-circle"></i> Seleccionar Mesa
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="id_mesa" class="form-label">Mesa *</label>
+                        <select class="form-select" id="id_mesa" name="id_mesa" required>
+                            <option value="">Seleccionar mesa...</option>
+                            {% for mesa in mesas %}
+                            <option value="{{ mesa.id_mesa }}">
+                                Mesa {{ mesa.numero }} - {{ mesa.capacidad }} personas - {{ mesa.ubicacion or 'Sin ubicación' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notas" class="form-label">Notas</label>
+                        <textarea class="form-control" id="notas" name="notas" rows="3" placeholder="Instrucciones especiales..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-circle"></i> Crear Comanda
+                    </button>
+                    <a href="{{ url_for('mesero.dashboard') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Instrucciones
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Selecciona la mesa del cliente</li>
+                    <li>Agrega notas si es necesario</li>
+                    <li>Haz clic en "Crear Comanda"</li>
+                    <li>Luego podrás agregar productos</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

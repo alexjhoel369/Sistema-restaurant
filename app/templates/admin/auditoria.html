@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Auditoría - Admin{% endblock %}
+{% block page_title %}Registro de Auditoría{% endblock %}
+{% block page_subtitle %}Últimas 24 horas de actividad en el sistema{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-journal-check"></i> Logs de Actividad
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Acción</th>
+                        <th>Tabla</th>
+                        <th>Registro ID</th>
+                        <th>Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.id_log }}</td>
+                        <td>{{ log.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td>
+                            {% if log.usuario %}
+                            <strong>{{ log.usuario.nombre }}</strong>
+                            {% else %}
+                            <span class="text-muted">Sistema</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if 'crear' in log.accion.lower() or 'creado' in log.accion.lower() 
+                                                else 'warning' if 'actualizar' in log.accion.lower() or 'edit' in log.accion.lower()
+                                                else 'danger' if 'eliminar' in log.accion.lower()
+                                                else 'info' }}">
+                                {{ log.accion }}
+                            </span>
+                        </td>
+                        <td><code>{{ log.tabla_afectada }}</code></td>
+                        <td>{{ log.id_registro_afectado or '-' }}</td>
+                        <td>
+                            {% if log.detalles %}
+                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="popover" 
+                                    data-bs-content="{{ log.detalles | tojson }}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No hay registros de auditoría</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Inicializar popovers
+var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+    return new bootstrap.Popover(popoverTriggerEl)
+})
+</script>
+{% endblock %}

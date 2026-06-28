@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Almacén - Panel{% endblock %}
+{% block page_title %}Panel de Almacenero{% endblock %}
+{% block page_subtitle %}Control de inventario{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Insumos con stock bajo -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle"></i> Insumos con Stock Bajo ({{ insumos_bajos|length }})
+            </div>
+            <div class="card-body">
+                {% if insumos_bajos %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Stock</th>
+                                <th>Mínimo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for insumo in insumos_bajos %}
+                            <tr class="table-danger">
+                                <td><strong>{{ insumo.nombre }}</strong></td>
+                                <td>{{ "%.3f"|format(insumo.stock_actual) }}</td>
+                                <td>{{ "%.3f"|format(insumo.stock_minimo) }}</td>
+                                <td>
+                                    <a href="{{ url_for('almacenero.kardex', id_insumo=insumo.id_insumo) }}" 
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-success text-center">
+                    <i class="bi bi-check-circle"></i> Todos los insumos tienen stock suficiente
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Movimientos recientes -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-clock-history"></i> Movimientos Recientes
+            </div>
+            <div class="card-body">
+                {% if movimientos_recientes %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mov in movimientos_recientes[:10] %}
+                            <tr>
+                                <td>{{ mov.insumo.nombre }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if mov.es_entrada else 'danger' }}">
+                                        {{ mov.tipo_movimiento | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.3f"|format(mov.cantidad) }}</td>
+                                <td><small>{{ mov.fecha.strftime('%d/%m %H:%M') }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No hay movimientos registrados</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs de Movimientos -->
+<div class="row mt-4">
+    <div class="col-12">
+        <ul class="nav nav-tabs" id="movimientosTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#entrada">📥 Entrada</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#salida">📤 Salida</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ajuste">⚙️ Ajuste</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content border border-top-0 p-3 bg-white rounded-bottom">
+            <!-- Entrada -->
+            <div class="tab-pane fade show active" id="entrada">
+                <form method="POST" action="{{ url_for('almacenero.registrar_entrada') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <select class="form-select" name="id_insumo" required>
+                                <option value="">Seleccionar insumo...</option>
+                                {% for ins in todos_insumos %}
+                                <option value="{{ ins.id_insumo }}">{{ ins.nombre }} ({{ "%.3f"|format(ins.stock_actual) }} {{ ins.unidad_medida }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input type="number" class="form-control" name="cantidad" placeholder="Cantidad" step="0.001" required>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input type="number" class="form-control" name="costo_unitario" placeholder="Costo Bs." step="0.01">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <select class="form-select" name="id_proveedor">
+                                <option value="">Proveedor...</option>
+                                {% for prov in proveedores %}
+                                <option value="{{ prov.id_proveedor }}">{{ prov.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input type="text" class="form-control" name="numero_factura" placeholder="N° Factura">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input type="text" class="form-control" name="motivo" placeholder="Motivo">
+                        </div>
+                        <div class="col-md-1 mb-2">
+                            <button type="submit" class="btn btn-success w-100" title="Registrar Entrada">+</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Salida -->
+            <div class="tab-pane fade" id="salida">
+                <form method="POST" action="{{ url_for('almacenero.registrar_salida') }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <select class="form-select" name="id_insumo" required>
+                                <option value="">Seleccionar insumo...</option>
+                                {% for ins in todos_insumos %}
+                                <option value="{{ ins.id_insumo }}">{{ ins.nombre }} ({{ "%.3f"|format(ins.stock_actual) }} {{ ins.unidad_medida }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input type="number" class="form-control" name="cantidad" placeholder="Cantidad" step="0.001" required>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control" name="motivo" placeholder="Motivo de salida" required>
+                        </div>
+                        <div class="col-md-1 mb-2">
+                            <button type="submit" class="btn btn-danger w-100" title="Registrar Salida">-</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Ajuste -->
+            <div class="tab-pane fade" id="ajuste">
+                <form method="POST" action="{{ url_for('almacenero.registrar_ajuste') }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <select class="form-select" name="id_insumo" required>
+                                <option value="">Seleccionar insumo...</option>
+                                {% for ins in todos_insumos %}
+                                <option value="{{ ins.id_insumo }}">{{ ins.nombre }} ({{ "%.3f"|format(ins.stock_actual) }} {{ ins.unidad_medida }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input type="number" class="form-control" name="cantidad" placeholder="(+ entrada, - salida)" step="0.001" required>
+                            <small class="text-muted">Positivo=Entrada | Negativo=Salida</small>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control" name="motivo" placeholder="Motivo del ajuste" required>
+                        </div>
+                        <div class="col-md-1 mb-2">
+                            <button type="submit" class="btn btn-warning w-100" title="Registrar Ajuste">~</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Todos los Insumos (con acceso a Kardex) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-box-seam"></i> Todos los Insumos ({{ todos_insumos|length }})
+            </div>
+            <div class="card-body">
+                {% if todos_insumos %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Categoría</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Unidad</th>
+                                <th>Estado</th>
+                                <th>Kardex</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for insumo in todos_insumos %}
+                            <tr class="{{ 'table-danger' if insumo.stock_bajo else '' }}">
+                                <td><strong>{{ insumo.nombre }}</strong></td>
+                                <td>{{ insumo.categoria.nombre if insumo.categoria else '-' }}</td>
+                                <td>
+                                    <span class="{{ 'text-danger fw-bold' if insumo.stock_bajo else 'text-success' }}">
+                                        {{ "%.3f"|format(insumo.stock_actual) }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.3f"|format(insumo.stock_minimo) }}</td>
+                                <td>{{ insumo.unidad_medida }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if insumo.stock_bajo else 'success' }}">
+                                        {{ 'Bajo' if insumo.stock_bajo else 'Normal' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('almacenero.kardex', id_insumo=insumo.id_insumo) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-journal-text"></i> Ver Kardex
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">No hay insumos registrados</p>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Ir al Panel Admin para crear insumos
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-recargar cada 60 segundos para ver movimientos actualizados
+setTimeout(function() {
+    location.reload();
+}, 60000);
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Productos - Admin{% endblock %}
+{% block page_title %}Gestión de Productos{% endblock %}
+{% block page_subtitle %}Administrar productos del menú{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'cup-hot' }}"></i>
+                {{ 'Editar Producto' if editar else 'Nuevo Producto' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('producto.actualizar', id_producto=editar.id_producto) if editar else url_for('producto.guardar') }}">
+                    <div class="mb-3">
+                        <label for="codigo" class="form-label">Código</label>
+                        <input type="text" class="form-control" id="codigo" name="codigo" 
+                               value="{{ editar.codigo if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="2">{{ editar.descripcion if editar else '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="precio" class="form-label">Precio (Bs.) *</label>
+                        <input type="number" class="form-control" id="precio" name="precio" 
+                               value="{{ editar.precio if editar else '' }}" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_categoria" class="form-label">Categoría *</label>
+                        <select class="form-select" id="id_categoria" name="id_categoria" required>
+                            <option value="">Seleccionar categoría...</option>
+                            {% for cat in categorias %}
+                            <option value="{{ cat.id_categoria }}" {{ 'selected' if editar and editar.id_categoria == cat.id_categoria else '' }}>
+                                {{ cat.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tiempo_preparacion_minutos" class="form-label">Tiempo Preparación (min)</label>
+                        <input type="number" class="form-control" id="tiempo_preparacion_minutos" name="tiempo_preparacion_minutos" 
+                               value="{{ editar.tiempo_preparacion_minutos if editar else 15 }}" min="1">
+                    </div>
+                    {% if editar %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" 
+                               {{ 'checked' if editar.activo else '' }}>
+                        <label class="form-check-label" for="activo">Producto Activo</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'plus-circle' }}"></i>
+                        {{ 'Actualizar' if editar else 'Guardar' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('producto.productos') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-cup-hot"></i> Lista de Productos
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prod in productos %}
+                            <tr>
+                                <td>{{ prod.id_producto }}</td>
+                                <td>{{ prod.codigo or '-' }}</td>
+                                <td><strong>{{ prod.nombre }}</strong></td>
+                                <td><span class="badge bg-info">{{ prod.categoria.nombre }}</span></td>
+                                <td><strong>Bs. {{ "%.2f"|format(prod.precio) }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if prod.activo else 'secondary' }}">
+                                        {{ 'Activo' if prod.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('producto.editar', id_producto=prod.id_producto) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ prod.id_producto }}, '{{ prod.nombre }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">No hay productos registrados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar el producto "${nombre}"?`)) {
+        window.location.href = `/productos/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

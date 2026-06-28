@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Receta de {{ producto.nombre }} - Admin{% endblock %}
+{% block page_title %}Receta: {{ producto.nombre }}{% endblock %}
+{% block page_subtitle %}Categoría: {{ producto.categoria.nombre }} | Precio: Bs. {{ "%.2f"|format(producto.precio) }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-plus-circle"></i> Agregar Ingrediente
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('receta.agregar_ingrediente', id_producto=producto.id_producto) }}">
+                    <div class="mb-3">
+                        <label for="id_insumo" class="form-label">Insumo *</label>
+                        <select class="form-select" id="id_insumo" name="id_insumo" required>
+                            <option value="">Seleccionar insumo...</option>
+                            {% for insumo in insumos %}
+                            <option value="{{ insumo.id_insumo }}">
+                                {{ insumo.nombre }} ({{ insumo.unidad_medida }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cantidad_requerida" class="form-label">Cantidad Requerida *</label>
+                        <input type="number" class="form-control" id="cantidad_requerida" name="cantidad_requerida" 
+                               step="0.001" min="0.001" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unidad_medida" class="form-label">Unidad de Medida *</label>
+                        <select class="form-select" id="unidad_medida" name="unidad_medida" required>
+                            <option value="kg">Kilogramo (kg)</option>
+                            <option value="gr">Gramo (gr)</option>
+                            <option value="lt">Litro (lt)</option>
+                            <option value="ml">Mililitro (ml)</option>
+                            <option value="unidad">Unidad</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="es_opcional" name="es_opcional">
+                        <label class="form-check-label" for="es_opcional">Ingrediente Opcional</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notas" class="form-label">Notas</label>
+                        <input type="text" class="form-control" id="notas" name="notas" placeholder="Instrucciones especiales">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle"></i> Agregar Ingrediente
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('receta.recetas') }}" class="btn btn-secondary w-100 mt-3">
+            <i class="bi bi-arrow-left"></i> Volver a Productos
+        </a>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Ingredientes de la Receta
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Cantidad</th>
+                                <th>Unidad</th>
+                                <th>Tipo</th>
+                                <th>Notas</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for receta in recetas %}
+                            <tr>
+                                <td><strong>{{ receta.insumo.nombre }}</strong></td>
+                                <td>{{ "%.3f"|format(receta.cantidad_requerida) }}</td>
+                                <td>{{ receta.unidad_medida }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if receta.es_opcional else 'info' }}">
+                                        {{ 'Opcional' if receta.es_opcional else 'Obligatorio' }}
+                                    </span>
+                                </td>
+                                <td>{{ receta.notas or '-' }}</td>
+                                <td>
+                                    <button onclick="confirmarEliminar({{ receta.id_receta }}, '{{ receta.insumo.nombre }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <i class="bi bi-exclamation-circle"></i> Este producto no tiene ingredientes asignados
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar "${nombre}" de la receta?`)) {
+        window.location.href = `/recetas/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

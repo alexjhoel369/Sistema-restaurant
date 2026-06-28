@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Proveedores - Admin{% endblock %}
+{% block page_title %}Gestión de Proveedores{% endblock %}
+{% block page_subtitle %}Administrar proveedores de insumos{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'truck' }}"></i>
+                {{ 'Editar Proveedor' if editar else 'Nuevo Proveedor' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('proveedor.actualizar', id_proveedor=editar.id_proveedor) if editar else url_for('proveedor.guardar') }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nit_ci" class="form-label">NIT/CI</label>
+                        <input type="text" class="form-control" id="nit_ci" name="nit_ci" 
+                               value="{{ editar.nit_ci if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" 
+                               value="{{ editar.telefono if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ editar.email if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion" name="direccion" 
+                               value="{{ editar.direccion if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contacto_nombre" class="form-label">Persona de Contacto</label>
+                        <input type="text" class="form-control" id="contacto_nombre" name="contacto_nombre" 
+                               value="{{ editar.contacto_nombre if editar else '' }}">
+                    </div>
+                    {% if editar %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" 
+                               {{ 'checked' if editar.activo else '' }}>
+                        <label class="form-check-label" for="activo">Proveedor Activo</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'plus-circle' }}"></i>
+                        {{ 'Actualizar' if editar else 'Guardar' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('proveedor.proveedores') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-truck"></i> Lista de Proveedores
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>NIT/CI</th>
+                                <th>Teléfono</th>
+                                <th>Contacto</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prov in proveedores %}
+                            <tr>
+                                <td>{{ prov.id_proveedor }}</td>
+                                <td><strong>{{ prov.nombre }}</strong></td>
+                                <td>{{ prov.nit_ci or '-' }}</td>
+                                <td>{{ prov.telefono or '-' }}</td>
+                                <td>{{ prov.contacto_nombre or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if prov.activo else 'secondary' }}">
+                                        {{ 'Activo' if prov.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('proveedor.editar', id_proveedor=prov.id_proveedor) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ prov.id_proveedor }}, '{{ prov.nombre }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">No hay proveedores registrados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar al proveedor "${nombre}"?`)) {
+        window.location.href = `/proveedores/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

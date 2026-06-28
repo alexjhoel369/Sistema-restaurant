@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Insumos - Admin{% endblock %}
+{% block page_title %}Gestión de Insumos{% endblock %}
+{% block page_subtitle %}Administrar inventario de insumos{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'box-seam' }}"></i>
+                {{ 'Editar Insumo' if editar else 'Nuevo Insumo' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('insumo.actualizar', id_insumo=editar.id_insumo) if editar else url_for('insumo.guardar') }}">
+                    <div class="mb-3">
+                        <label for="codigo" class="form-label">Código</label>
+                        <input type="text" class="form-control" id="codigo" name="codigo" 
+                               value="{{ editar.codigo if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="2">{{ editar.descripcion if editar else '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_categoria" class="form-label">Categoría</label>
+                        <select class="form-select" id="id_categoria" name="id_categoria">
+                            <option value="">Seleccionar categoría...</option>
+                            {% for cat in categorias %}
+                            <option value="{{ cat.id_categoria }}" {{ 'selected' if editar and editar.id_categoria == cat.id_categoria else '' }}>
+                                {{ cat.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unidad_medida" class="form-label">Unidad de Medida *</label>
+                        <select class="form-select" id="unidad_medida" name="unidad_medida" required>
+                            <option value="kg" {{ 'selected' if editar and editar.unidad_medida == 'kg' else '' }}>Kilogramo (kg)</option>
+                            <option value="gr" {{ 'selected' if editar and editar.unidad_medida == 'gr' else '' }}>Gramo (gr)</option>
+                            <option value="lt" {{ 'selected' if editar and editar.unidad_medida == 'lt' else '' }}>Litro (lt)</option>
+                            <option value="ml" {{ 'selected' if editar and editar.unidad_medida == 'ml' else '' }}>Mililitro (ml)</option>
+                            <option value="unidad" {{ 'selected' if editar and editar.unidad_medida == 'unidad' else '' }}>Unidad</option>
+                            <option value="docena" {{ 'selected' if editar and editar.unidad_medida == 'docena' else '' }}>Docena</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="stock_minimo" class="form-label">Stock Mínimo</label>
+                            <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" 
+                                   value="{{ editar.stock_minimo if editar else 10 }}" step="0.001">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="stock_maximo" class="form-label">Stock Máximo</label>
+                            <input type="number" class="form-control" id="stock_maximo" name="stock_maximo" 
+                                   value="{{ editar.stock_maximo if editar else 100 }}" step="0.001">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="costo_unitario_promedio" class="form-label">Costo Unitario Promedio (Bs.)</label>
+                        <input type="number" class="form-control" id="costo_unitario_promedio" name="costo_unitario_promedio" 
+                               value="{{ editar.costo_unitario_promedio if editar else 0 }}" step="0.01">
+                    </div>
+                    {% if editar %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" 
+                               {{ 'checked' if editar.activo else '' }}>
+                        <label class="form-check-label" for="activo">Insumo Activo</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'plus-circle' }}"></i>
+                        {{ 'Actualizar' if editar else 'Guardar' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('insumo.insumos') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-box-seam"></i> Lista de Insumos</span>
+                <a href="{{ url_for('inventario.inventario') }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-arrow-left-right"></i> Movimientos
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Stock Actual</th>
+                                <th>Unidad</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ins in insumos %}
+                            <tr class="{{ 'table-warning' if ins.stock_bajo else '' }}">
+                                <td>{{ ins.id_insumo }}</td>
+                                <td>{{ ins.codigo or '-' }}</td>
+                                <td><strong>{{ ins.nombre }}</strong></td>
+                                <td>
+                                    <strong class="{{ 'text-danger' if ins.stock_bajo else 'text-success' }}">
+                                        {{ "%.3f"|format(ins.stock_actual) }}
+                                    </strong>
+                                    {% if ins.stock_bajo %}
+                                    <span class="badge bg-danger ms-1">¡Bajo!</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ ins.unidad_medida }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if ins.activo else 'secondary' }}">
+                                        {{ 'Activo' if ins.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('insumo.editar', id_insumo=ins.id_insumo) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ ins.id_insumo }}, '{{ ins.nombre }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">No hay insumos registrados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar el insumo "${nombre}"?`)) {
+        window.location.href = `/insumos/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

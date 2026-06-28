@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Comanda #{{ comanda.id_comanda }}{% endblock %}
+{% block page_title %}Comanda #{{ comanda.id_comanda }}{% endblock %}
+{% block page_subtitle %}Mesa {{ comanda.mesa.numero }} | {{ comanda.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Información de la comanda -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-info-circle"></i> Información
+            </div>
+            <div class="card-body">
+                <p><strong>Mesa:</strong> {{ comanda.mesa.numero }} ({{ comanda.mesa.capacidad }}p)</p>
+                <p><strong>Ubicación:</strong> {{ comanda.mesa.ubicacion or 'No especificada' }}</p>
+                <p><strong>Mesero:</strong> {{ comanda.mesero.nombre }}</p>
+                <p><strong>Fecha:</strong> {{ comanda.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</p>
+                <p><strong>Estado:</strong> 
+                    <span class="badge bg-{{ 'success' if comanda.estado == 'abierta' else 'secondary' }}">
+                        {{ comanda.estado | capitalize }}
+                    </span>
+                </p>
+                <hr>
+                <h4 class="text-center">Total: <strong>Bs. {{ "%.2f"|format(comanda.total) }}</strong></h4>
+                
+                {% if comanda.estado == 'abierta' %}
+                <a href="{{ url_for('mesero.cerrar_comanda', id_comanda=comanda.id_comanda) }}" 
+                   class="btn btn-danger w-100 mt-3"
+                   onclick="return confirm('¿Estás seguro de cerrar esta comanda?')">
+                    <i class="bi bi-check-circle"></i> Cerrar Comanda
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <a href="{{ url_for('mesero.comandas') }}" class="btn btn-secondary w-100 mt-2">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+    
+    <!-- Productos en la comanda -->
+    <div class="col-md-8">
+        <!-- Agregar producto -->
+        {% if comanda.estado == 'abierta' %}
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-plus-circle"></i> Agregar Producto
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('mesero.agregar_producto', id_comanda=comanda.id_comanda) }}">
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label for="id_producto" class="form-label">Producto *</label>
+                            <select class="form-select" id="id_producto" name="id_producto" required>
+                                <option value="">Seleccionar producto...</option>
+                                {% for cat in categorias %}
+                                <optgroup label="{{ cat.nombre }}">
+                                    {% for prod in productos if prod.id_categoria == cat.id_categoria and prod.activo %}
+                                    <option value="{{ prod.id_producto }}">
+                                        {{ prod.nombre }} - Bs. {{ "%.2f"|format(prod.precio) }}
+                                    </option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="cantidad" class="form-label">Cant.</label>
+                            <input type="number" class="form-control" id="cantidad" name="cantidad" value="1" min="1" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="notas" class="form-label">Notas</label>
+                            <input type="text" class="form-control" id="notas" name="notas" placeholder="Ej: Sin cebolla">
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Lista de productos -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Productos ({{ comanda.detalles|length }})
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cant.</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in comanda.detalles %}
+                            <tr>
+                                <td>
+                                    <strong>{{ detalle.producto.nombre }}</strong>
+                                    {% if detalle.notas %}
+                                    <br><small class="text-muted">{{ detalle.notas }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ detalle.cantidad }}</td>
+                                <td>Bs. {{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                <td><strong>Bs. {{ "%.2f"|format(detalle.subtotal) }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 
+                                        'secondary' if detalle.estado_preparacion == 'pendiente' 
+                                        else 'warning' if detalle.estado_preparacion == 'en_preparacion'
+                                        else 'info' if detalle.estado_preparacion == 'listo'
+                                        else 'success' if detalle.estado_preparacion == 'entregado'
+                                        else 'danger' 
+                                    }}">
+                                        {{ detalle.estado_preparacion | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if comanda.estado == 'abierta' and detalle.estado_preparacion == 'pendiente' %}
+                                    <button onclick="confirmarEliminar({{ detalle.id_detalle }}, '{{ detalle.producto.nombre }}')" 
+                                            class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No hay productos en esta comanda</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(idDetalle, nombre) {
+    if (confirm(`¿Estás seguro de eliminar "${nombre}" de la comanda?`)) {
+        window.location.href = `/mesero/comanda/{{ comanda.id_comanda }}/eliminar/${idDetalle}`;
+    }
+}
+</script>
+{% endblock %}

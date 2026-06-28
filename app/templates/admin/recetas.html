@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Recetas - Admin{% endblock %}
+{% block page_title %}Gestión de Recetas{% endblock %}
+{% block page_subtitle %}Selecciona un producto para ver su receta{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-journal-text"></i> Productos Disponibles
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for producto in productos %}
+            <div class="col-md-4 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ producto.nombre }}</h5>
+                        <p class="card-text text-muted">{{ producto.categoria.nombre }}</p>
+                        <p class="card-text"><strong>Bs. {{ "%.2f"|format(producto.precio) }}</strong></p>
+                        <a href="{{ url_for('receta.ver_receta', id_producto=producto.id_producto) }}" class="btn btn-primary">
+                            <i class="bi bi-eye"></i> Ver Receta
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center">
+                <p>No hay productos registrados</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

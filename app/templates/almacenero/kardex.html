@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Kardex: {{ insumo.nombre }}{% endblock %}
+{% block page_title %}Kardex: {{ insumo.nombre }}{% endblock %}
+{% block page_subtitle %}Stock actual: {{ "%.3f"|format(insumo.stock_actual) }} {{ insumo.unidad_medida }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-info-circle"></i> Información del Insumo
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Nombre:</strong> {{ insumo.nombre }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Stock Actual:</strong> 
+                            <span class="badge bg-{{ 'danger' if insumo.stock_bajo else 'success' }}">
+                                {{ "%.3f"|format(insumo.stock_actual) }} {{ insumo.unidad_medida }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Stock Mínimo:</strong> {{ "%.3f"|format(insumo.stock_minimo) }} {{ insumo.unidad_medida }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-journal-text"></i> Historial de Movimientos ({{ movimientos|length }})
+            </div>
+            <div class="card-body">
+                {% if movimientos %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Stock Anterior</th>
+                                <th>Stock Nuevo</th>
+                                <th>Usuario</th>
+                                <th>Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mov in movimientos %}
+                            <tr>
+                                <td><small>{{ mov.fecha.strftime('%d/%m/%Y %H:%M') }}</small></td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if mov.es_entrada else 'danger' if mov.es_salida else 'warning' }}">
+                                        {{ mov.tipo_movimiento | replace('_', ' ') | capitalize }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ "%.3f"|format(mov.cantidad) }}</strong></td>
+                                <td>{{ "%.3f"|format(mov.stock_anterior) }}</td>
+                                <td>{{ "%.3f"|format(mov.stock_nuevo) }}</td>
+                                <td>{{ mov.usuario.nombre }}</td>
+                                <td>{{ mov.motivo or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">No hay movimientos registrados para este insumo</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <a href="{{ url_for('almacenero.dashboard') }}" class="btn btn-secondary mt-3">
+            <i class="bi bi-arrow-left"></i> Volver al Panel
+        </a>
+    </div>
+</div>
+{% endblock %}

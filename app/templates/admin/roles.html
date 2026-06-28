@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Roles - Admin{% endblock %}
+{% block page_title %}Gestión de Roles{% endblock %}
+{% block page_subtitle %}Administrar roles del sistema{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'plus-circle' }}"></i>
+                {{ 'Editar Rol' if editar else 'Nuevo Rol' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('rol.actualizar', id_rol=editar.id_rol) if editar else url_for('rol.guardar') }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Rol *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ editar.descripcion if editar else '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'plus-circle' }}"></i>
+                        {{ 'Actualizar' if editar else 'Guardar' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('rol.roles') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Lista de Roles
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rol in roles %}
+                            <tr>
+                                <td>{{ rol.id_rol }}</td>
+                                <td><strong>{{ rol.nombre }}</strong></td>
+                                <td>{{ rol.descripcion or '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if rol.activo else 'secondary' }}">
+                                        {{ 'Activo' if rol.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('rol.editar', id_rol=rol.id_rol) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ rol.id_rol }}, '{{ rol.nombre }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No hay roles registrados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar el rol "${nombre}"?`)) {
+        window.location.href = `/roles/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - Admin{% endblock %}
+{% block page_title %}Control de Inventario{% endblock %}
+{% block page_subtitle %}Registrar movimientos de inventario{% endblock %}
+
+{% block content %}
+<!-- Tabs de navegación -->
+<ul class="nav nav-tabs mb-4" id="inventarioTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="entrada-tab" data-bs-toggle="tab" data-bs-target="#entrada" type="button">
+            <i class="bi bi-box-arrow-in-down"></i> Entrada
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="salida-tab" data-bs-toggle="tab" data-bs-target="#salida" type="button">
+            <i class="bi bi-box-arrow-up"></i> Salida
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="ajuste-tab" data-bs-toggle="tab" data-bs-target="#ajuste" type="button">
+            <i class="bi bi-sliders"></i> Ajuste
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="inventarioTabsContent">
+    <!-- Entrada de Compra -->
+    <div class="tab-pane fade show active" id="entrada" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-box-arrow-in-down"></i> Registrar Entrada de Compra
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('inventario.registrar_entrada') }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_insumo_entrada" class="form-label">Insumo *</label>
+                            <select class="form-select" id="id_insumo_entrada" name="id_insumo" required>
+                                <option value="">Seleccionar...</option>
+                                {% for ins in insumos %}
+                                <option value="{{ ins.id_insumo }}">{{ ins.nombre }} ({{ ins.unidad_medida }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="cantidad_entrada" class="form-label">Cantidad *</label>
+                            <input type="number" class="form-control" id="cantidad_entrada" name="cantidad" step="0.001" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="costo_unitario" class="form-label">Costo Unitario (Bs.)</label>
+                            <input type="number" class="form-control" id="costo_unitario" name="costo_unitario" step="0.01">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="id_proveedor" class="form-label">Proveedor</label>
+                            <select class="form-select" id="id_proveedor" name="id_proveedor">
+                                <option value="">Sin proveedor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="numero_factura" class="form-label">N° Factura</label>
+                            <input type="text" class="form-control" id="numero_factura" name="numero_factura">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="motivo_entrada" class="form-label">Motivo / Notas</label>
+                            <input type="text" class="form-control" id="motivo_entrada" name="motivo">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Registrar Entrada
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Salida por Merma -->
+    <div class="tab-pane fade" id="salida" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-box-arrow-up"></i> Registrar Salida (Merma/Desperdicio)
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('inventario.registrar_salida') }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_insumo_salida" class="form-label">Insumo *</label>
+                            <select class="form-select" id="id_insumo_salida" name="id_insumo" required>
+                                <option value="">Seleccionar...</option>
+                                {% for ins in insumos %}
+                                <option value="{{ ins.id_insumo }}">{{ ins.nombre }} (Stock: {{ "%.3f"|format(ins.stock_actual) }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="cantidad_salida" class="form-label">Cantidad *</label>
+                            <input type="number" class="form-control" id="cantidad_salida" name="cantidad" step="0.001" required>
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label for="motivo_salida" class="form-label">Motivo *</label>
+                            <input type="text" class="form-control" id="motivo_salida" name="motivo" required placeholder="Ej: Tomate dañado">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-check-circle"></i> Registrar Salida
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ajuste de Inventario -->
+    <div class="tab-pane fade" id="ajuste" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-sliders"></i> Ajuste de Inventario
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('inventario.registrar_ajuste') }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_insumo_ajuste" class="form-label">Insumo *</label>
+                            <select class="form-select" id="id_insumo_ajuste" name="id_insumo" required>
+                                <option value="">Seleccionar...</option>
+                                {% for ins in insumos %}
+                                <option value="{{ ins.id_insumo }}">{{ ins.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="cantidad_ajuste" class="form-label">Cantidad *</label>
+                            <input type="number" class="form-control" id="cantidad_ajuste" name="cantidad" step="0.001" required>
+                            <small class="text-muted">Positivo = Entrada | Negativo = Salida</small>
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label for="motivo_ajuste" class="form-label">Motivo *</label>
+                            <input type="text" class="form-control" id="motivo_ajuste" name="motivo" required placeholder="Ej: Corrección inventario">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Registrar Ajuste
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos Movimientos -->
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="bi bi-clock-history"></i> Últimos Movimientos
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Insumo</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in movimientos %}
+                    <tr>
+                        <td>{{ mov.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ mov.insumo.nombre }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if mov.es_entrada else 'danger' }}">
+                                {{ mov.tipo_movimiento }}
+                            </span>
+                        </td>
+                        <td>{{ "%.3f"|format(mov.cantidad) }}</td>
+                        <td>{{ mov.usuario.nombre }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay movimientos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('inventario.movimientos') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios - Admin{% endblock %}
+{% block page_title %}Gestión de Usuarios{% endblock %}
+{% block page_subtitle %}Administrar usuarios del sistema{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-{{ 'pencil-square' if editar else 'person-plus' }}"></i>
+                {{ 'Editar Usuario' if editar else 'Nuevo Usuario' }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('usuario.actualizar', id_usuario=editar.id_usuario) if editar else url_for('usuario.guardar') }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ editar.nombre if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="apellido" class="form-label">Apellido *</label>
+                        <input type="text" class="form-control" id="apellido" name="apellido" 
+                               value="{{ editar.apellido if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ editar.email if editar else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" 
+                               value="{{ editar.telefono if editar else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_rol" class="form-label">Rol *</label>
+                        <select class="form-select" id="id_rol" name="id_rol" required>
+                            <option value="">Seleccionar rol...</option>
+                            {% for rol in roles %}
+                            <option value="{{ rol.id_rol }}" {{ 'selected' if editar and editar.id_rol == rol.id_rol else '' }}>
+                                {{ rol.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            Contraseña {{ '' if editar else '*' }}
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               {{ '' if editar else 'required' }}
+                               placeholder="{{ 'Dejar vacío para mantener actual' if editar else '' }}">
+                    </div>
+                    {% if editar %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" 
+                               {{ 'checked' if editar.activo else '' }}>
+                        <label class="form-check-label" for="activo">Usuario Activo</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-{{ 'check-circle' if editar else 'person-plus' }}"></i>
+                        {{ 'Actualizar' if editar else 'Crear Usuario' }}
+                    </button>
+                    {% if editar %}
+                    <a href="{{ url_for('usuario.usuarios') }}" class="btn btn-secondary w-100 mt-2">Cancelar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-people"></i> Lista de Usuarios
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre Completo</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>{{ usuario.id_usuario }}</td>
+                                <td><strong>{{ usuario.nombre_completo }}</strong></td>
+                                <td>{{ usuario.email }}</td>
+                                <td><span class="badge bg-info">{{ usuario.rol.nombre }}</span></td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if usuario.activo else 'secondary' }}">
+                                        {{ 'Activo' if usuario.activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('usuario.editar', id_usuario=usuario.id_usuario) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button onclick="confirmarEliminar({{ usuario.id_usuario }}, '{{ usuario.nombre_completo }}')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No hay usuarios registrados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmarEliminar(id, nombre) {
+    if (confirm(`¿Estás seguro de eliminar al usuario "${nombre}"?`)) {
+        window.location.href = `/usuarios/eliminar/${id}`;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{
+  "info": {
+    "name": "Sistema Restaurante API",
+    "_postman_id": "12345",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:5000/"
+      }
+    },
+    {
+      "name": "Productos",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/productos"
+      }
+    },
+    {
+      "name": "Mesas",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/mesas"
+      }
+    }
+  ]
+}
